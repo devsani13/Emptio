@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Emptio - Painel do Moderador (Gerenciar Produtos)</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar sm:navbar-expand bg-1 fg-2">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><img src="EmptioPNG2.png" alt="Emptio" width="150px"></a>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3">Painel do Moderador</span>
+                <button type="button" class="btn-solid theme-danger" id="botaoSair">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 800px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gerenciar Catálogo de Produtos</h2>
+            <button type="button" class="btn-solid theme-primary" id="btnNovoProduto">Adicionar Novo Produto</button>
+        </div>
+
+        <!-- Lista de Produtos -->
+        <div class="list-group" id="listaProdutosModerador">
+            <!-- Preenchido via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar / Editar Produto -->
+    <dialog class="dialog" id="modalProdutoMod" data-bs-theme="dark">
+        <div class="dialog-header">
+            <h1 class="dialog-title" id="modalTitulo">Adicionar Produto</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="dialog" id="fecharModal"></button>
+        </div>
+        <div class="dialog-body">
+            <form id="formProdutoMod" class="product-form">
+                <input type="hidden" id="prodIndex">
+                <div class="product-form-fields">
+                    <div class="form-field mb-3">
+                        <label for="modNome" class="form-label">Nome do Produto</label>
+                        <input type="text" class="form-control" id="modNome" placeholder="Ex: Arroz" required>
+                    </div>
+                    <div class="form-field mb-3">
+                        <label for="modPreco" class="form-label">Preço (R$)</label>
+                        <input type="text" class="form-control" id="modPreco" placeholder="0,00" required>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="dialog-footer">
+            <button type="button" class="btn-solid theme-secondary" id="btnCancelarModal">Cancelar</button>
+            <button type="submit" form="formProdutoMod" class="btn-solid theme-primary">Salvar</button>
+        </div>
+    </dialog>
+
+    <script>
+        const CHAVE_CATALOGO = "produtosCatalogoMod";
+
+        // Produtos pré-definidos iniciais (substituem o arquivo produtos.json)
+        const produtosIniciais = [
+            { nome: "Arroz", preco: 25.50 },
+            { nome: "Feijão", preco: 8.90 },
+            { nome: "Macarrão", preco: 5.20 },
+            { nome: "Óleo de Soja", preco: 7.80 },
+            { nome: "Café", preco: 16.00 }
+        ];
+
+        function obterProdutosCatalogo() {
+            let dadosSalvos = localStorage.getItem(CHAVE_CATALOGO);
+            if (dadosSalvos) {
+                try {
+                    return JSON.parse(dadosSalvos);
+                } catch (e) {
+                    console.error("Erro ao ler catálogo do localStorage");
+                }
+            }
+
+            // Se for a primeira vez e não existir nada no localStorage, salva os pré-definidos
+            localStorage.setItem(CHAVE_CATALOGO, JSON.stringify(produtosIniciais));
+            return produtosIniciais;
+        }
+
+        function salvarCatalogo(produtos) {
+            localStorage.setItem(CHAVE_CATALOGO, JSON.stringify(produtos));
+            renderizarProdutos();
+        }
+
+        function renderizarProdutos() {
+            const container = document.getElementById("listaProdutosModerador");
+            const produtos = obterProdutosCatalogo();
+            container.replaceChildren();
+
+            if (produtos.length === 0) {
+                container.innerHTML = `<div class="empty-state p-4 text-center">Nenhum produto cadastrado.</div>`;
+                return;
+            }
+
+            produtos.forEach((produto, indice) => {
+                const item = document.createElement("div");
+                item.className = "list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary mb-2 rounded p-3";
+                
+                const precoFormatado = Number(produto.preco).toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+                item.innerHTML = `
+                    <div>
+                        <h5 class="mb-1">${produto.nome}</h5>
+                        <small class="text-muted">R$ ${precoFormatado}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-warning me-2" onclick="editarProduto(${indice})">Editar</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="excluirProduto(${indice})">Excluir</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Modal Controls
+        const modal = document.getElementById("modalProdutoMod");
+        const form = document.getElementById("formProdutoMod");
+
+        document.getElementById("btnNovoProduto").addEventListener("click", () => {
+            document.getElementById("modalTitulo").textContent = "Adicionar Produto";
+            document.getElementById("prodIndex").value = "";
+            document.getElementById("modNome").value = "";
+            document.getElementById("modPreco").value = "";
+            modal.showModal();
+        });
+
+        document.getElementById("btnCancelarModal").addEventListener("click", () => modal.close());
+        document.getElementById("fecharModal").addEventListener("click", () => modal.close());
+
+        window.editarProduto = function(indice) {
+            const produtos = obterProdutosCatalogo();
+            const produto = produtos[indice];
+
+            document.getElementById("modalTitulo").textContent = "Editar Produto";
+            document.getElementById("prodIndex").value = indice;
+            document.getElementById("modNome").value = produto.nome;
+            document.getElementById("modPreco").value = Number(produto.preco).toFixed(2).replace(".", ",");
+            modal.showModal();
+        }
+
+        window.excluirProduto = function(indice) {
+            if (!confirm("Deseja realmente excluir este produto?")) return;
+            let produtos = obterProdutosCatalogo();
+            produtos.splice(indice, 1);
+            salvarCatalogo(produtos);
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const indice = document.getElementById("prodIndex").value;
+            const nome = document.getElementById("modNome").value.trim();
+            const precoTexto = document.getElementById("modPreco").value.replace(/\./g, "").replace(",", ".");
+            const preco = Number(precoTexto);
+
+            if (!nome || !Number.isFinite(preco) || preco <= 0) {
+                alert("Preencha os campos corretamente!");
+                return;
+            }
+
+            let produtos = obterProdutosCatalogo();
+
+            if (indice !== "") {
+                // Editando
+                produtos[indice] = { nome, preco };
+            } else {
+                // Adicionando novo
+                produtos.push({ nome, preco });
+            }
+
+            salvarCatalogo(produtos);
+            modal.close();
+        });
+
+        document.getElementById("botaoSair").addEventListener("click", () => {
+            sessionStorage.removeItem("usuarioLogado");
+            window.location.href = "indexlogin.html";
+        });
+
+        // Carregar lista ao iniciar
+        renderizarProdutos();
+    </script>
+</body>
+
+</html>
