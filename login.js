@@ -139,3 +139,29 @@ if (loginForm) {
     });
 
 }
+
+// ==========================================
+// ALTERNAR ENTRE TELA DE LOGIN E CADASTRO
+// ==========================================
+
+const linksAlternar = document.querySelectorAll("[data-show-form]");
+
+linksAlternar.forEach(link => {
+    link.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const idFormularioAlvo = this.getAttribute("data-show-form");
+        const loginFormEl = document.getElementById("loginForm");
+        const registerFormEl = document.getElementById("registerForm");
+
+        if (loginFormEl && registerFormEl) {
+            if (idFormularioAlvo === "registerForm") {
+                loginFormEl.hidden = true;
+                registerFormEl.hidden = false;
+            } else {
+                loginFormEl.hidden = false;
+                registerFormEl.hidden = true;
+            }
+        }
+    });
+});
