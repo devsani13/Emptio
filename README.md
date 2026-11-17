@@ -46,7 +46,7 @@ Como a aplicação é estática e roda diretamente no navegador utilizando `loca
 
 * Opcional: Extensão **Live Server** no VS Code.
 
-### 🚀 Como executar o software
+### Como executar o software
 
 1. **Clonar o Repositório**
 
