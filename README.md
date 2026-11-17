@@ -9,7 +9,6 @@ Uma aplicação web desenvolvida para gerenciamento de compras, controle de cat�
 | **Ana Laura Martins de Oliveira** | `analoliveira@unisantos.br` | 
 | **Dennis de Oliveira Monteiro** | `dmonteiro@unisantos.br` | 
 | **Samuel Martins Passos da Silva** | `samuelmartins@unisantos.br` | 
-| 
 
 ## Sobre o Projeto
 
